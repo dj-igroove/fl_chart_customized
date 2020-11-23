@@ -1555,7 +1555,12 @@ List<LineTooltipItem> defaultLineTooltipItem(List<LineBarSpot> touchedSpots) {
       fontWeight: FontWeight.bold,
       fontSize: 14,
     );
-    return LineTooltipItem(touchedSpot.y.toString(), textStyle);
+    final TextStyle textStyle2 = TextStyle(
+      color: touchedSpot.bar.colors[0],
+      fontWeight: FontWeight.bold,
+      fontSize: 14,
+    );
+    return LineTooltipItem(touchedSpot.y.toString(), textStyle, "", textStyle2);
   }).toList();
 }
 
@@ -1596,18 +1601,22 @@ class LineBarSpot extends FlSpot with EquatableMixin {
 class LineTooltipItem with EquatableMixin {
   /// Showing text.
   final String text;
+  final String text2;
 
   /// Style of showing text.
   final TextStyle textStyle;
+  final TextStyle textStyle2;
 
   /// Shows a [text] with [textStyle] as a row in the tooltip popup.
-  LineTooltipItem(this.text, this.textStyle);
+  LineTooltipItem(this.text, this.textStyle, this.text2, this.textStyle2);
 
   /// Used for equality check, see [EquatableMixin].
   @override
   List<Object> get props => [
         text,
         textStyle,
+        text2,
+        textStyle2
       ];
 }
 

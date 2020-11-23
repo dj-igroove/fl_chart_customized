@@ -27,6 +27,8 @@ class LineChartPainter extends AxisChartPainter<LineChartData>
       _bgTouchTooltipPaint,
       _imagePaint;
 
+  double tooltipOffset;
+
   /// Paints [data] into canvas, it is the animating [LineChartData],
   /// [targetData] is the animation's target and remains the same
   /// during animation, then we should use it  when we need to show
@@ -91,23 +93,7 @@ class LineChartPainter extends AxisChartPainter<LineChartData>
       _drawExtraLines(canvas, size);
     }
 
-    /// draw each line independently on the chart
-    for (int i = 0; i < data.lineBarsData.length; i++) {
-      final barData = data.lineBarsData[i];
 
-      if (!barData.show) {
-        continue;
-      }
-
-      _drawBarLine(canvas, size, barData);
-      _drawDots(canvas, size, barData);
-
-      if (data.extraLinesData != null && data.extraLinesData.extraLinesOnTop) {
-        _drawExtraLines(canvas, size);
-      }
-
-      _drawTouchedSpotsIndicator(canvas, size, barData);
-    }
 
     if (data.clipData.any) {
       canvas.restore();
@@ -135,6 +121,25 @@ class LineChartPainter extends AxisChartPainter<LineChartData>
 
       _drawTouchTooltip(canvas, size, data.lineTouchData.touchTooltipData, topSpot, tooltipSpots);
     }
+
+    /// draw each line independently on the chart
+    for (int i = 0; i < data.lineBarsData.length; i++) {
+      final barData = data.lineBarsData[i];
+
+      if (!barData.show) {
+        continue;
+      }
+
+      _drawBarLine(canvas, size, barData);
+      _drawDots(canvas, size, barData);
+
+      if (data.extraLinesData != null && data.extraLinesData.extraLinesOnTop) {
+        _drawExtraLines(canvas, size);
+      }
+
+      _drawTouchedSpotsIndicator(canvas, size, barData);
+    }
+
   }
 
   void _clipToBorder(
@@ -296,10 +301,10 @@ class LineChartPainter extends AxisChartPainter<LineChartData>
       /// For drawing the indicator line
       final bottom = Offset(touchedSpot.dx, getTopOffsetDrawSize() + chartViewSize.height);
       final top = Offset(getPixelX(spot.x, chartViewSize), getTopOffsetDrawSize());
-
+      
       /// Draw to top or to the touchedSpot
-      final Offset lineEnd =
-          data.lineTouchData.fullHeightTouchLine ? top : touchedSpot + Offset(0, dotHeight / 2);
+      // final Offset lineEnd = data.lineTouchData.fullHeightTouchLine ? top : touchedSpot + Offset(0, dotHeight / 2);
+      final Offset lineEnd = data.lineTouchData.fullHeightTouchLine ? Offset(getPixelX(spot.x, chartViewSize),tooltipOffset) : touchedSpot + Offset(0, dotHeight / 2);
 
       _touchLinePaint.color = indicatorData.indicatorBelowLine.color;
       _touchLinePaint.strokeWidth = indicatorData.indicatorBelowLine.strokeWidth;
@@ -1144,6 +1149,14 @@ class LineChartPainter extends AxisChartPainter<LineChartData>
           textScaleFactor: textScale);
       tp.layout(maxWidth: tooltipData.maxContentWidth);
       drawingTextPainters.add(tp);
+      final TextSpan span2 = TextSpan(style: tooltipItem.textStyle2, text: tooltipItem.text2);
+      final TextPainter tp2 = TextPainter(
+          text: span2,
+          textAlign: TextAlign.center,
+          textDirection: TextDirection.ltr,
+          textScaleFactor: textScale);
+      tp2.layout(maxWidth: tooltipData.maxContentWidth);
+      drawingTextPainters.add(tp2);
     }
     if (drawingTextPainters.isEmpty) {
       return;
@@ -1176,6 +1189,8 @@ class LineChartPainter extends AxisChartPainter<LineChartData>
 
     final double tooltipWidth = biggerWidth + tooltipData.tooltipPadding.horizontal;
     final double tooltipHeight = sumTextsHeight + tooltipData.tooltipPadding.vertical;
+
+    tooltipOffset = tooltipHeight;
 
     double tooltipTopPosition;
     if (tooltipData.showOnTopOfTheChartBoxArea) {
